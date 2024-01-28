@@ -1,113 +1,120 @@
-import Image from "next/image";
+"use client";
+import { Button } from "@/components/ui/button"
+import { ChangeEvent, useState } from "react";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner"
 
 export default function Home() {
+  const [image, setImage] = useState<File>();
+  const [imagePreview, setImagePreview] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState<string>();
+  const [error, setError] = useState<string>();
+
+  async function fetchAltFromAI() {
+    if (!image) {
+      toast.error("Please upload an image")
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_API_KEY as string);
+      const model = genAI.getGenerativeModel({ model: "gemini-pro-vision" });
+      const inputText = process.env.NEXT_PUBLIC_PROMPT;
+
+      let imageParts;
+      if (Array.isArray(image)) {
+        imageParts = await Promise.all(image.map(fileToGenerativePart));
+      } else {
+        imageParts = [await fileToGenerativePart(image)];
+      }
+      const result = await model.generateContent([inputText, ...imageParts]);
+      const text = result.response.text();
+
+      setLoading(false);
+      setData(text);
+    } catch (error) {
+      setLoading(false);
+      console.error("Error: ", error);
+    }
+  }
+
+  async function fileToGenerativePart(file) {
+    const base64EncodedDataPromise = new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result.split(",")[1]);
+      reader.readAsDataURL(file);
+    });
+    return {
+      inlineData: { data: await base64EncodedDataPromise, mimeType: file.type },
+    };
+  }
+
+  const onImageChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files[0];
+
+    if (file) {
+      setImage(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
+
+  const onCopy = () => {
+    if (data) {
+      navigator.clipboard.writeText(data);
+      toast("Copied to clipboard")
+    }
+  };
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
+    <main className="container mx-auto flex flex-col lg:px-[24px] xl:px-0 pt-[5rem] mb-[8rem]">
+      <div className="w-full md:w-[50%] mx-auto flex flex-col items-center">
+        <h1 className="text-center text-[4rem] font-bold mt-2">Altman</h1>
+        <p className="text-center">Generate alternative texts for your images with AI.</p>
+
+        <input type="file" name="image" id="image" className="hidden" onChange={onImageChange} />
+        <label htmlFor="image" className="inline-block w-full mt-[3rem]">
+          <div className="group cursor-pointer">
+            <div className="w-full h-[80px] border-[2px] border-dashed border-neutral-200 rounded-lg grid place-content-center group-hover:border-neutral-600 transition-all duration-200 ease-in-out">
+              <p className="font-bold text-neutral-400 group-hover:text-neutral-600 transition-all duration-200 ease-in-out">Upload your image</p>
+            </div>
+          </div>
+        </label>
+        <Button onClick={fetchAltFromAI} className="mt-[2rem]">
+          <div className="size-4 mr-3">
+            <svg className="w-ful h-full" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="#ffffff">
+              <path d="M7.657 6.247c.11-.33.576-.33.686 0l.645 1.937a2.89 2.89 0 0 0 1.829 1.828l1.936.645c.33.11.33.576 0 .686l-1.937.645a2.89 2.89 0 0 0-1.828 1.829l-.645 1.936a.361.361 0 0 1-.686 0l-.645-1.937a2.89 2.89 0 0 0-1.828-1.828l-1.937-.645a.361.361 0 0 1 0-.686l1.937-.645a2.89 2.89 0 0 0 1.828-1.828l.645-1.937zM3.794 1.148a.217.217 0 0 1 .412 0l.387 1.162c.173.518.579.924 1.097 1.097l1.162.387a.217.217 0 0 1 0 .412l-1.162.387A1.734 1.734 0 0 0 4.593 5.69l-.387 1.162a.217.217 0 0 1-.412 0L3.407 5.69A1.734 1.734 0 0 0 2.31 4.593l-1.162-.387a.217.217 0 0 1 0-.412l1.162-.387A1.734 1.734 0 0 0 3.407 2.31l.387-1.162zM10.863.099a.145.145 0 0 1 .274 0l.258.774c.115.346.386.617.732.732l.774.258a.145.145 0 0 1 0 .274l-.774.258a1.156 1.156 0 0 0-.732.732l-.258.774a.145.145 0 0 1-.274 0l-.258-.774a1.156 1.156 0 0 0-.732-.732L9.1 2.137a.145.145 0 0 1 0-.274l.774-.258c.346-.115.617-.386.732-.732L10.863.1z" />
+            </svg>
+          </div>
+          Generate a stunning alt
+        </Button>
       </div>
 
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-full sm:before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full sm:after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px] z-[-1]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
+      {imagePreview && (
+        <section className="md:w-[90%] mx-auto flex flex-col md:grid grid-cols-2 mt-[50px]">
+          <div className="md:p-8 grid place-content-center">
+            <img src={imagePreview} alt="Preview image" className="shadow-lg aspect-square lg:aspect-auto lg:max-h-[550px]" />
+          </div>
+          <div className="mt-8 md:mt-0 md:p-12">
+            {loading ? (
+              <div className="space-y-3">
+                <Skeleton className="w-[190px] h-[20px] rounded-full" />
+                <Skeleton className="w-[250px] h-[20px] rounded-full" />
+                <Skeleton className="w-[90px] h-[20px] rounded-full" />
+                <Skeleton className="w-[100px] h-[40px] rounded-md inline-block" />
+              </div>
+            ) : (
+              <div>
+                <p>{data}</p>
+                {data && <Button variant="secondary" className="mt-5" onClick={onCopy}>Copy it</Button>}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
 
-      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50 text-balance`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+    </main >
   );
 }
