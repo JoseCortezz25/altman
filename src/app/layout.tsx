@@ -7,7 +7,14 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Altman",
-  description: "A chat app for chating with Ollama",
+  description: "A simple web app to generate alt text for images using Google's Generative AI",
+  authors: [{ name: "@josecortezz25", url: "https://alfonso-portafolio.vercel.app/" }],
+  openGraph: {
+    title: "Altman",
+    description: "A simple web app to generate alt text for images using Google's Generative AI",
+    type: "website",
+    url: "https://altman.vercel.app",
+  },
 };
 
 export default function RootLayout({
