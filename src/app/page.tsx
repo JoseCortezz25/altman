@@ -10,7 +10,6 @@ export default function Home() {
   const [imagePreview, setImagePreview] = useState('');
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<string>();
-  const [error, setError] = useState<string>();
 
   async function fetchAltFromAI() {
     if (!image) {
@@ -37,9 +36,11 @@ export default function Home() {
       setData(text);
     } catch (error) {
       setLoading(false);
-      console.error("Error: ", error);
+      console.error(error);
     }
   }
+
+  const validMimeType = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/webp']
 
   async function fileToGenerativePart(file) {
     const base64EncodedDataPromise = new Promise((resolve) => {
@@ -54,6 +55,11 @@ export default function Home() {
 
   const onImageChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files[0];
+
+    if (!validMimeType.includes(file.type)) {
+      toast.error("Invalid file type. Please upload an image")
+      return;
+    }
 
     if (file) {
       setImage(file);
