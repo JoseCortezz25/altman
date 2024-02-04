@@ -1,7 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button"
 import { ChangeEvent, useState } from "react";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenerativeAI, Part } from "@google/generative-ai";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner"
 
@@ -22,6 +22,7 @@ export default function Home() {
       const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_API_KEY as string);
       const model = genAI.getGenerativeModel({ model: "gemini-pro-vision" });
       const inputText = process.env.NEXT_PUBLIC_PROMPT;
+      if (!inputText) return;
 
       let imageParts;
       if (Array.isArray(image)) {
@@ -42,19 +43,32 @@ export default function Home() {
 
   const validMimeType = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/webp']
 
-  async function fileToGenerativePart(file) {
-    const base64EncodedDataPromise = new Promise((resolve) => {
+  async function fileToGenerativePart(file: File) {
+    const base64EncodedDataPromise = new Promise<string>((resolve, reject) => {
       const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result.split(",")[1]);
+      reader.onloadend = () => {
+        if (typeof reader.result === 'string') {
+          resolve(reader.result.split(",")[1]);
+        } else {
+          reject('FileReader result is not a string');
+        }
+      };
       reader.readAsDataURL(file);
     });
+
+    const base64EncodedData = await base64EncodedDataPromise;
     return {
-      inlineData: { data: await base64EncodedDataPromise, mimeType: file.type },
+      inlineData: {
+        data: base64EncodedData,
+        mimeType: file.type,
+      },
     };
   }
 
   const onImageChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files[0];
+    const file = event.target.files?.[0];
+
+    if (!file) return;
 
     if (!validMimeType.includes(file.type)) {
       toast.error("Invalid file type. Please upload an image")
