@@ -8,7 +8,7 @@ const Footer = () => {
           <ul className="flex flex-wrap justify-center gap-4 text-xs lg:justify-end">
 
             <li>
-              <p className="text-gray-500 transition hover:opacity-75"> Generate alt text. </p>
+              <p className="text-gray-500 transition hover:opacity-75"> Generate alt text with AI. </p>
             </li>
           </ul>
 

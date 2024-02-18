@@ -7,7 +7,7 @@ import { Footer } from "@/components/Footer";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Altman",
+  title: "Altman: Generate alternative texts for your images",
   description: "A simple web app to generate alt text for images using Google's Generative AI",
   authors: [{ name: "@josecortezz25", url: "https://alfonso-portafolio.vercel.app/" }],
   openGraph: {

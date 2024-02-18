@@ -106,7 +106,7 @@ export default function Home() {
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6.75022 16.5002C0.000222408 17.2502 0.750222 9.00024 6.75022 9.75024C4.50022 1.50024 17.2502 1.50024 16.5002 7.50024C24.0002 5.25024 24.0002 17.2502 17.2502 16.5002M8.25022 13.5002L12.0002 10.5002M12.0002 10.5002L15.7502 13.5002M12.0002 10.5002V21.7502" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" stroke="currentColor"></path></svg>
                 </div>
 
-                <div className="w-[80%] sm:w-auto sm:inline-block">
+                <div className="w-[80%] md:w-[70%] lg:w-auto sm:inline-block">
                   <p className="font-semibold text-neutral-400 group-hover:text-neutral-600 transition-all duration-200 ease-in-out leading-[20px]">Drag and Drop your image or click to upload here.</p>
                   <p className="text-neutral-400 group-hover:text-neutral-600 transition-all duration-200 ease-in-out">(.png, .jpg, .jpeg, .webp)</p>
                 </div>
