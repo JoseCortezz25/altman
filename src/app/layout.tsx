@@ -26,7 +26,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <main>
+        <main className="h-screen flex flex-col items-stretch justify-between">
           {children}
           <Footer />
         </main>

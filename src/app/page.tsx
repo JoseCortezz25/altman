@@ -82,22 +82,6 @@ export default function Home() {
     };
   }
 
-  const onImageChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-
-    if (!file) return;
-
-    if (!validMimeType.includes(file.type)) {
-      toast.error("Invalid file type. Please upload an image")
-      return;
-    }
-
-    if (file) {
-      setImage(file);
-      setImagePreview(URL.createObjectURL(file));
-    }
-  };
-
   const onCopy = () => {
     if (data) {
       navigator.clipboard.writeText(data);
@@ -106,14 +90,14 @@ export default function Home() {
   };
 
   return (
-    <div className="container mx-auto flex flex-col lg:px-[24px] xl:px-0 pt-[5rem] mb-[8rem]">
+    <div className="container mx-auto flex flex-col lg:px-[24px] xl:px-0 pt-[5rem] ">
       <div className="w-full md:w-[50%] mx-auto flex flex-col items-center">
         <h1 className="text-center text-[4rem] font-bold mt-2">Altman</h1>
         <p className="text-center">Generate alternative texts for your images with AI.</p>
 
 
         <div {...getRootProps()} className="w-full h-[120px] mt-[3rem]">
-          <input type="file" name="image" id="image" className="hidden" onChange={onImageChange}  {...getInputProps()} />
+          <input type="file" name="image" id="image" className="hidden" {...getInputProps()} />
 
           <label htmlFor="image" className="w-full h-full">
             <div className="group cursor-pointer h-full">
